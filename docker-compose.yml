@@ -1,0 +1,45 @@
+version: "2"
+services:
+  magento_php:
+    image: thinhvoxuan/docker-wordpress
+    volumes:
+      - ./source:/code
+      - ./devops/conf/log.conf:/usr/local/etc/php-fpm.d/zz-log.conf
+    links:
+      - magento_mysql:mysql
+    depends_on:
+      - magento_mysql
+
+  magento_mysql:
+    image: mysql:5.6
+    env_file:
+      - ./devops/env/web-variable.env
+    volumes:
+      - ./devops/stack/mysql/.db/mysql:/var/lib/mysql:rw
+      - ./devops/stack/mysql/:/stack/mysql:rw
+      - ./devops/stack/entrypoint:/docker-entrypoint-initdb.d
+
+  magento_website:
+    image: nginx:latest
+    ports:
+      - 10001:80
+    volumes:
+      - ./source:/code
+      - ./devops/conf/site.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - magento_php:php
+    depends_on:
+      - magento_php
+      
+  adminer:
+    image: clue/adminer
+    links:
+      - magento_mysql:mysql
+    env_file:
+      - ./devops/env/web-variable.env
+    ports:
+      - 10002:80
+    volumes:
+      - ./devops/migrations:/app
+    depends_on:
+      - magento_mysql
