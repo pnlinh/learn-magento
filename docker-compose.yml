@@ -1,9 +1,10 @@
 version: "2"
 services:
   magento_php:
-    image: thinhvoxuan/docker-wordpress
+    build: 
+      context: ./src
     volumes:
-      - ./source:/code
+      - ./src:/code
       - ./devops/conf/log.conf:/usr/local/etc/php-fpm.d/zz-log.conf
     links:
       - magento_mysql:mysql
@@ -22,9 +23,9 @@ services:
   magento_website:
     image: nginx:latest
     ports:
-      - 10001:80
+      - 17001:80
     volumes:
-      - ./source:/code
+      - ./src:/code
       - ./devops/conf/site.conf:/etc/nginx/conf.d/default.conf
     links:
       - magento_php:php
@@ -38,7 +39,7 @@ services:
     env_file:
       - ./devops/env/web-variable.env
     ports:
-      - 10002:80
+      - 17002:80
     volumes:
       - ./devops/migrations:/app
     depends_on:
